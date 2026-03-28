@@ -1,0 +1,287 @@
+/* style.css - Modern Dark Theme for Quiz System */
+
+:root {
+    --bg-color: #0d1117;
+    --panel-bg: #161b22;
+    --card-bg: #21262d;
+    --text-main: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #1f6feb;
+    --success: #2ea043;
+    --danger: #da3633;
+    --warning: #e3b341;
+    --border: #30363d;
+    --glow: rgba(88, 166, 255, 0.4);
+    
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Typography */
+h1, h2, h3 {
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+/* Layout Utilities */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Cards & Panels */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-panel {
+    background: rgba(22, 27, 34, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Inputs & Buttons */
+input[type="text"], input[type="number"], input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+}
+
+button {
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+    box-shadow: 0 0 10px var(--glow);
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: #fff;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: #fff;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+}
+.btn-outline:hover {
+    border-color: var(--text-muted);
+    background-color: rgba(255,255,255,0.05);
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Options / MCQs */
+.option-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background-color: rgba(88, 166, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.option-btn.selected {
+    background-color: rgba(88, 166, 255, 0.2);
+    border-color: var(--accent);
+    border-left: 4px solid var(--accent);
+}
+
+.option-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.option-input-wrapper input[type="text"] {
+    margin-bottom: 0;
+}
+
+/* Badges & Status */
+.badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+.badge-active { background-color: rgba(46, 160, 67, 0.2); color: var(--success); }
+.badge-stopped { background-color: rgba(218, 54, 51, 0.2); color: var(--danger); }
+
+/* specific components */
+.timer-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: monospace;
+    color: var(--warning);
+    background: rgba(227, 179, 65, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(227, 179, 65, 0.3);
+}
+
+/* Admin Dashboard Specific */
+.admin-sidebar {
+    background-color: var(--panel-bg);
+    border-right: 1px solid var(--border);
+    padding: 2rem 1rem;
+    min-height: calc(100vh - 60px);
+}
+.admin-nav-item {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+.admin-nav-item:hover, .admin-nav-item.active {
+    background-color: var(--card-bg);
+    color: var(--text-main);
+}
+.admin-nav-item.active {
+    border-left: 3px solid var(--accent);
+}
+
+.admin-header {
+    background-color: var(--panel-bg);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+th {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+tr:hover {
+    background-color: rgba(255,255,255,0.02);
+}
+
+/* Warning overlay */
+#warning-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(218, 54, 51, 0.9);
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .container { padding: 1rem; }
+    .timer-display { font-size: 1.2rem; }
+}

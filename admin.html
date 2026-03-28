@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Quiz System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="view-login" style="display: flex; height: 100vh; justify-content: center; align-items: center; background-color: var(--bg-color);">
+        <div class="glass-panel" style="width: 100%; max-width: 400px; text-align: center;">
+            <h2 style="margin-bottom: 2rem;"><span style="color:var(--accent)">Admin</span> Login</h2>
+            <input type="text" id="admin-user" placeholder="Username (admin)" style="margin-bottom: 1rem;">
+            <input type="password" id="admin-pass" placeholder="Password (admin123)" style="margin-bottom: 2rem;">
+            <button id="btn-login" class="btn-primary btn-block">Login</button>
+            <p id="login-error" style="color:var(--danger); margin-top:1rem; display:none;">Invalid credentials</p>
+            <div style="margin-top: 2rem; font-size: 0.9em;">
+                <a href="index.html" style="color:var(--accent); text-decoration:none;">Go back to Student Portal</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Admin App -->
+    <div id="admin-app" style="display: none; flex-direction: column; min-height: 100vh;">
+        <header class="admin-header flex-between">
+        <h2 style="margin:0;"><span style="color:var(--accent)">Admin</span> Panel</h2>
+        <a href="index.html" class="btn-outline" style="text-decoration:none;">Go to Student Portal</a>
+    </header>
+
+    <div style="display: flex; flex: 1;">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar" style="width: 250px;">
+            <div class="admin-nav-item" data-target="dashboard">
+                📊 Dashboard
+            </div>
+            <div class="admin-nav-item" data-target="students">
+                👥 Manage Students
+            </div>
+            <div class="admin-nav-item" data-target="questions">
+                📝 Manage Questions
+            </div>
+            <div class="admin-nav-item" data-target="settings">
+                ⚙️ Test Settings
+            </div>
+            <div style="margin-top: 3rem;">
+                <button id="btn-start-test" class="btn-primary btn-block" style="margin-bottom:10px;">Start Test</button>
+                <button id="btn-stop-test" class="btn-danger btn-block" style="display:none;">Stop Test</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main style="flex: 1; padding: 2rem; overflow-y: auto; height: calc(100vh - 60px);">
+            
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="animate-fade-in">
+                <div class="flex-between mb-4">
+                    <h2>Student Results Dashboard</h2>
+                    <div style="display:flex; gap:1rem; align-items:center;">
+                        <button id="btn-download-csv" class="btn-success">Download CSV</button>
+                        <button id="btn-clear-attempts" class="btn-danger" style="padding: 0.5rem 1rem;">Clear Logs</button>
+                        <div id="test-status-badge" class="badge badge-stopped">Status: Stopped</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h3>Result Visibility</h3>
+                    <p style="color:var(--text-muted); margin-bottom:1rem;">Control whether students can see their score and correct answers after submission.</p>
+                    <button id="btn-toggle-results" class="btn-outline">Enable Results for Students</button>
+                </div>
+
+                <div class="card">
+                    <h3>Student Attempts</h3>
+                    <table id="attempts-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attempts-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Manage Students View -->
+            <section id="view-students" class="animate-fade-in" style="display: none;">
+                <div class="flex-between">
+                    <h2>Manage Students</h2>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="new-student-name" placeholder="Enter student name..." style="width:200px; margin:0;" />
+                        <button id="btn-add-student" class="btn-primary">Add & Generate ID</button>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 2rem;">
+                    <p style="color:var(--text-muted); margin-bottom:1rem;">Students must use these generated credentials to log in. Their account binds permanently to the first device they use.</p>
+                    <table id="students-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Student ID</th>
+                                <th>Password</th>
+                                <th>Device Bound?</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Manage Questions View -->
+            <section id="view-questions" class="animate-fade-in" style="display: none;">
+                <div class="flex-between">
+                    <h2>Manage Questions</h2>
+                    <button id="btn-add-question" class="btn-primary">+ Add Question</button>
+                </div>
+                <div id="questions-list" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Populated via JS -->
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section id="view-settings" class="animate-fade-in" style="display: none;">
+                <h2>Test Settings</h2>
+                <div class="card" style="max-width: 500px;">
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="setting-timer-enabled" style="width:auto; margin:0;">
+                        <label for="setting-timer-enabled"><strong>Enable Exam Timer</strong></label>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display:block; margin-bottom:0.5rem;">Time per question (seconds)</label>
+                        <input type="number" id="setting-timer-duration" value="15" min="5" max="300">
+                    </div>
+                    <div>
+                        <button id="btn-save-settings" class="btn-success">Save Settings</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Add/Edit Question Modal (Simplified with JS prompts/custom logic or minimal design) -->
+    <div id="modal-question" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center;">
+        <div class="glass-panel" style="width:100%; max-width:600px;">
+            <h3>Edit Question</h3>
+            <input type="text" id="modal-q-text" placeholder="Question Text" style="margin-top:1rem;">
+            <div style="margin-top:1rem;">
+                <div class="option-input-wrapper"><input type="radio" name="correct-opt" value="0"> <input type="text" id="modal-opt-0" placeholder="Option 1"></div>
+                <div class="option-input-wrapper"><input type="radio" name="correct-opt" value="1"> <input type="text" id="modal-opt-1" placeholder="Option 2"></div>
+                <div class="option-input-wrapper"><input type="radio" name="correct-opt" value="2"> <input type="text" id="modal-opt-2" placeholder="Option 3"></div>
+                <div class="option-input-wrapper"><input type="radio" name="correct-opt" value="3"> <input type="text" id="modal-opt-3" placeholder="Option 4"></div>
+            </div>
+            <div class="flex-between" style="margin-top:2rem;">
+                <button id="btn-modal-cancel" class="btn-outline">Cancel</button>
+                <button id="btn-modal-save" class="btn-success">Save Question</button>
+            </div>
+            <input type="hidden" id="modal-q-id">
+        </div>
+    </div>
+    </div> <!-- End Admin App -->
+
+    <script src="questions.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
