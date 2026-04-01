@@ -102,7 +102,10 @@
                 <div class="card" style="margin-top: 2rem;">
                     <div class="flex-between" style="margin-bottom:1rem;">
                         <p style="color:var(--text-muted); margin:0;">Students must use these generated credentials to log in.</p>
-                        <button id="btn-regen-passwords" class="btn-danger" style="padding:0.4rem 0.8rem; font-size:0.9rem;">Regenerate All Passwords</button>
+                        <div style="display:flex; gap:10px;">
+                            <button id="btn-download-pdf" class="btn-success" style="padding:0.4rem 0.8rem; font-size:0.9rem;">Download PDF</button>
+                            <button id="btn-regen-passwords" class="btn-danger" style="padding:0.4rem 0.8rem; font-size:0.9rem;">Regenerate All Passwords</button>
+                        </div>
                     </div>
                     <table id="students-table">
                         <thead>
@@ -177,7 +180,11 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <script src="questions.js?v=4"></script>
-    <script src="admin.js?v=4"></script>
+    <!-- jsPDF API -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="questions.js?v=5"></script>
+    <script src="admin.js?v=5"></script>
 </body>
 </html>

@@ -396,6 +396,57 @@ document.getElementById('btn-regen-passwords').addEventListener('click', async (
     }
 });
 
+document.getElementById('btn-download-pdf').addEventListener('click', async () => {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert("PDF generator is still loading, please wait and try again. Or check your internet connection.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(18);
+    doc.text("Student Login Credentials", 14, 22);
+    
+    // Subtitle / Date
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const students = await getStudents();
+    
+    if (students.length === 0) {
+        alert("No students to download.");
+        return;
+    }
+
+    const tableColumn = ["Student Name", "Student ID", "Password", "Status"];
+    const tableRows = [];
+
+    students.forEach(s => {
+        const status = s.isAbsent ? "Absent" : "Present";
+        const rowData = [
+            s.name,
+            s.id,
+            s.password,
+            status
+        ];
+        tableRows.push(rowData);
+    });
+
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 35,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [41, 128, 185] }
+    });
+
+    doc.save("Student_Credentials.pdf");
+});
+
 async function loadSettings() {
     const config = await getConfig();
     document.getElementById('setting-timer-duration').value = config.durationPerQuestion;
