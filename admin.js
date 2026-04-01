@@ -312,11 +312,14 @@ async function renderStudentsCard() {
         if (s.boundDeviceId) {
             unlockBtnHtml = `<button class="btn-warning btn-unlock-device" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" title="Reset device lock">Unlock Device</button>`;
         }
+        
+        const ipText = s.ipAddress ? s.ipAddress : '<span style="color:var(--text-muted);">Not logged in</span>';
 
         row.innerHTML = `
             <td><strong>${s.name}</strong></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.id}</code></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.password}</code></td>
+            <td>${ipText}</td>
             <td>${statusText}</td>
             <td style="display:flex; gap:5px; flex-wrap:wrap;">
                 <button class="${toggleBtnClass} btn-toggle-absent" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;">${toggleBtnText}</button>
@@ -350,6 +353,7 @@ async function renderStudentsCard() {
                 const student = studList.find(st => st.id === sId);
                 if (student) {
                     student.boundDeviceId = null;
+                    student.ipAddress = null;
                     await saveStudents(studList);
                     await renderStudentsCard();
                 }
@@ -396,6 +400,7 @@ document.getElementById('btn-add-student').addEventListener('click', async () =>
         name: name,
         password: pwd,
         boundDeviceId: null,
+        ipAddress: null,
         isAbsent: false
     });
 

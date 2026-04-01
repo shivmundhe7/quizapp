@@ -89,14 +89,29 @@ function initNavigation() {
             return;
         }
 
+        let dynamicIp = null;
+        try {
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            dynamicIp = ipData.ip;
+        } catch(e) { console.warn("Could not fetch IP", e); }
+
         if (student.boundDeviceId) {
             if (student.boundDeviceId !== localDeviceId) {
                 errorMsg.textContent = 'Your account is already logged into another device. You must use that device.';
                 errorMsg.style.display = 'block';
                 return;
+            } else {
+                // Same device login, update IP quietly to keep it fresh
+                if (dynamicIp && student.ipAddress !== dynamicIp) {
+                    student.ipAddress = dynamicIp;
+                    await saveStudents(students).catch(e => console.warn(e));
+                }
             }
         } else {
             student.boundDeviceId = localDeviceId;
+            if (dynamicIp) student.ipAddress = dynamicIp;
+            
             try {
                 await saveStudents(students);
             } catch (e) {

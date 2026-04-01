@@ -161,6 +161,7 @@ async function initializeDatabase() {
                         name: match[2].trim(),
                         password: Math.floor(100000 + Math.random() * 900000).toString(),
                         boundDeviceId: null,
+                        ipAddress: null,
                         isAbsent: false
                     });
                 }
