@@ -308,13 +308,19 @@ async function renderStudentsCard() {
         const toggleBtnClass = s.isAbsent ? 'btn-success' : 'btn-outline';
         const toggleBtnText = s.isAbsent ? 'Mark Present' : 'Mark Absent';
 
+        let unlockBtnHtml = '';
+        if (s.boundDeviceId) {
+            unlockBtnHtml = `<button class="btn-warning btn-unlock-device" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" title="Reset device lock">Unlock Device</button>`;
+        }
+
         row.innerHTML = `
             <td><strong>${s.name}</strong></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.id}</code></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.password}</code></td>
             <td>${statusText}</td>
-            <td style="display:flex; gap:5px;">
+            <td style="display:flex; gap:5px; flex-wrap:wrap;">
                 <button class="${toggleBtnClass} btn-toggle-absent" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;">${toggleBtnText}</button>
+                ${unlockBtnHtml}
                 <button class="btn-danger btn-del-student" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;">Delete</button>
             </td>
         `;
@@ -332,6 +338,21 @@ async function renderStudentsCard() {
                 student.isAbsent = !student.isAbsent;
                 await saveStudents(studList);
                 await renderStudentsCard();
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-unlock-device').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            if(confirm('Unlock this student so they can log in from a new device?')) {
+                const sId = e.target.dataset.id;
+                const studList = await getStudents();
+                const student = studList.find(st => st.id === sId);
+                if (student) {
+                    student.boundDeviceId = null;
+                    await saveStudents(studList);
+                    await renderStudentsCard();
+                }
             }
         });
     });

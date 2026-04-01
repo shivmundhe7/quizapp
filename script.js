@@ -75,6 +75,38 @@ function initNavigation() {
             return;
         }
 
+        // Device Binding Logic
+        let localDeviceId = localStorage.getItem('deviceId');
+        if (!localDeviceId) {
+            localDeviceId = 'DEV-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+            localStorage.setItem('deviceId', localDeviceId);
+        }
+
+        const otherBoundStudent = students.find(s => s.id !== student.id && s.boundDeviceId === localDeviceId);
+        if (otherBoundStudent) {
+            errorMsg.textContent = 'This device has already been registered to another student. You cannot use it.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        if (student.boundDeviceId) {
+            if (student.boundDeviceId !== localDeviceId) {
+                errorMsg.textContent = 'Your account is already logged into another device. You must use that device.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+        } else {
+            student.boundDeviceId = localDeviceId;
+            try {
+                await saveStudents(students);
+            } catch (e) {
+                console.error("Binding failed:", e);
+                errorMsg.textContent = 'Failed to lock your device to your account. Please check your connection and try again.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+        }
+
         // Login Success
         currentStudentId = student.id;
         currentStudentName = student.name;
