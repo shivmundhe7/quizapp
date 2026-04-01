@@ -309,12 +309,7 @@ function handleTabSwitch() {
 function terminateExam(reason) {
     if (!isExamActive) return;
     
-    if (warningCount === 0) {
-        warningCount++;
-        alert("WARNING (1/1): You switched tabs or minimized the browser! " + 
-              "This is your ONLY warning. If you do this again, your exam will be terminated unconditionally.");
-        return;
-    }
+
 
     // Show Warning Overlay Briefly
     const overlay = document.getElementById('warning-overlay');
