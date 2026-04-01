@@ -31,6 +31,18 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    
+    /* Strict Anti-Cheat CSS */
+    -webkit-user-select: none; 
+    -ms-user-select: none; 
+    user-select: none; 
+}
+
+/* Prevent inputs from being blocked by user-select: none */
+input, textarea {
+    -webkit-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
 }
 
 /* Typography */
@@ -284,4 +296,11 @@ tr:hover {
     .grid-2 { grid-template-columns: 1fr; }
     .container { padding: 1rem; }
     .timer-display { font-size: 1.2rem; }
+}
+
+/* Strict Anti-Cheat: Blank Page on Print */
+@media print {
+    body {
+        display: none !important;
+    }
 }

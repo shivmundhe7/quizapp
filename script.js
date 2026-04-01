@@ -18,9 +18,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    // Prevent common devtools shortcuts
+    // Prevent common devtools and save/print shortcuts
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'c') || (e.ctrlKey && e.key === 'v')) {
+        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (source), Ctrl+S (save), Ctrl+P (print), Ctrl+C, Ctrl+V, Ctrl+X
+        if (
+            e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || 
+            (e.ctrlKey && (e.key === 'u' || e.key === 'U')) ||
+            (e.ctrlKey && (e.key === 's' || e.key === 'S')) ||
+            (e.ctrlKey && (e.key === 'p' || e.key === 'P')) ||
+            (e.ctrlKey && (e.key === 'c' || e.key === 'C')) || 
+            (e.ctrlKey && (e.key === 'v' || e.key === 'V')) ||
+            (e.ctrlKey && (e.key === 'x' || e.key === 'X')) ||
+            (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight'))
+        ) {
             e.preventDefault();
         }
     });
@@ -205,6 +216,7 @@ async function startExam() {
     isExamActive = true;
     window.addEventListener('blur', handleTabSwitch);
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
 
     // Setup state
     questions = await getQuestions();
@@ -311,6 +323,13 @@ function handleTabSwitch() {
     // Fired when window loses focus
     if (isExamActive) {
         terminateExam('Lost window focus (clicked outside or switched apps)');
+    }
+}
+
+function handleFullscreenChange() {
+    // If the browser exits fullscreen natively during an active exam
+    if (isExamActive && !document.fullscreenElement) {
+        terminateExam('Exited Fullscreen Mode explicitly');
     }
 }
 
