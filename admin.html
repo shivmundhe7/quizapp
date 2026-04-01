@@ -100,7 +100,10 @@
                 </div>
                 
                 <div class="card" style="margin-top: 2rem;">
-                    <p style="color:var(--text-muted); margin-bottom:1rem;">Students must use these generated credentials to log in.</p>
+                    <div class="flex-between" style="margin-bottom:1rem;">
+                        <p style="color:var(--text-muted); margin:0;">Students must use these generated credentials to log in.</p>
+                        <button id="btn-regen-passwords" class="btn-danger" style="padding:0.4rem 0.8rem; font-size:0.9rem;">Regenerate All Passwords</button>
+                    </div>
                     <table id="students-table">
                         <thead>
                             <tr>
@@ -173,7 +176,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <script src="questions.js?v=2"></script>
-    <script src="admin.js?v=2"></script>
+    <script src="questions.js?v=3"></script>
+    <script src="admin.js?v=3"></script>
 </body>
 </html>

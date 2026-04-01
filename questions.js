@@ -159,7 +159,7 @@ async function initializeDatabase() {
                     students.push({
                         id: match[1],
                         name: match[2].trim(),
-                        password: "123456",
+                        password: Math.floor(100000 + Math.random() * 900000).toString(),
                         boundDeviceId: null
                     });
                 }

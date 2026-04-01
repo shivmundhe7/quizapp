@@ -306,11 +306,16 @@ document.getElementById('btn-add-student').addEventListener('click', async () =>
     const nameInput = document.getElementById('new-student-name');
     const pwdInput = document.getElementById('new-student-password');
     const name = nameInput.value.trim();
-    const pwd = pwdInput ? pwdInput.value.trim() : '';
+    let pwd = pwdInput ? pwdInput.value.trim() : '';
 
-    if(!name || !pwd) {
-        alert("Enter a student name and password.");
+    if(!name) {
+        alert("Enter a student name.");
         return;
+    }
+
+    // Auto-generate 6-digit password if left blank
+    if (!pwd) {
+        pwd = Math.floor(100000 + Math.random() * 900000).toString();
     }
 
     const students = await getStudents();
@@ -330,6 +335,18 @@ document.getElementById('btn-add-student').addEventListener('click', async () =>
     nameInput.value = '';
     if (pwdInput) pwdInput.value = '';
     await renderStudentsCard();
+});
+
+document.getElementById('btn-regen-passwords').addEventListener('click', async () => {
+    if(confirm("Are you sure you want to regenerate random passwords for ALL students? This will overwrite their current passwords.")) {
+        const students = await getStudents();
+        students.forEach(s => {
+            s.password = Math.floor(100000 + Math.random() * 900000).toString();
+        });
+        await saveStudents(students);
+        await renderStudentsCard();
+        alert("All student passwords have been randomized successfully.");
+    }
 });
 
 async function loadSettings() {
