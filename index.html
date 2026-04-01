@@ -29,7 +29,7 @@
         <section id="view-entry" class="glass-panel animate-fade-in" style="max-width: 500px; margin: 2rem auto; text-align:center;">
             <h2>Student Login</h2>
             <p style="color:var(--text-muted); margin-bottom: 2rem;">Enter your credentials to access the exam.</p>
-            <input type="text" id="student-id" placeholder="Student ID (e.g. STD-1001)" style="margin-bottom: 1rem;">
+            <input type="text" id="student-id" placeholder="Student ID (e.g. STD-1001)" autocapitalize="characters" style="margin-bottom: 1rem;">
             <input type="password" id="student-pass" placeholder="Password" style="margin-bottom: 1.5rem;">
             <button id="btn-enter" class="btn-primary btn-block">Login to Exam</button>
             <p id="login-error-msg" style="color:var(--danger); margin-top:1rem; display:none;"></p>
@@ -99,7 +99,11 @@
 
     </main>
 
-    <script src="questions.js"></script>
-    <script src="script.js"></script>
+    <!-- Firebase SDK (v8 compat for global script scope) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script src="questions.js?v=2"></script>
+    <script src="script.js?v=2"></script>
 </body>
 </html>

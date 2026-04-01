@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Check test status changes (sync between tabs/windows)
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'testStatusTrigger' || e.key === 'quizConfig') {
+    // Check test status changes via Firestore realtime sync
+    db.collection("data").doc("config").onSnapshot((doc) => {
+        if (doc.exists) {
             checkTestStatus();
             checkResultVisibility();
         }
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initNavigation() {
-    document.getElementById('btn-enter').addEventListener('click', () => {
+    document.getElementById('btn-enter').addEventListener('click', async () => {
         const sId = document.getElementById('student-id').value.trim();
         const sPass = document.getElementById('student-pass').value.trim();
         const errorMsg = document.getElementById('login-error-msg');
@@ -48,37 +48,25 @@ function initNavigation() {
             return;
         }
 
-        const students = getStudents();
-        const student = students.find(s => s.id === sId && s.password === sPass);
+        let students = [];
+        try {
+            students = await getStudents();
+        } catch (e) {
+            console.error("Firebase error details:", e);
+            errorMsg.textContent = 'Network or database error. Please check your connection and try again.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        const student = students.find(s => 
+            String(s.id).trim().toUpperCase() === String(sId).trim().toUpperCase() && 
+            String(s.password).trim() === String(sPass).trim()
+        );
 
         if (!student) {
             errorMsg.textContent = 'Invalid Student ID or Password.';
             errorMsg.style.display = 'block';
             return;
-        }
-
-        // Handle Device Binding Rule
-        const deviceId = getDeviceId();
-        
-        if (student.boundDeviceId) {
-            // Already bound, verify it is THIS device
-            if (student.boundDeviceId !== deviceId) {
-                errorMsg.textContent = 'Account locked! This account is registered to another device.';
-                errorMsg.style.display = 'block';
-                return;
-            }
-        } else {
-            // Not bound. First, check if THIS device is already bound to someone else
-            const isDeviceUsed = students.some(s => s.boundDeviceId === deviceId);
-            if (isDeviceUsed) {
-                errorMsg.textContent = 'Device locked! This device is already used by another student.';
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            // Bind it
-            student.boundDeviceId = deviceId;
-            saveStudents(students);
         }
 
         // Login Success
@@ -120,10 +108,10 @@ function switchView(viewId) {
     });
 }
 
-function checkTestStatus() {
+async function checkTestStatus() {
     if (!currentStudentName || isExamActive) return; // Ignore if exam is running or name not entered
 
-    const config = getConfig();
+    const config = await getConfig();
     if (config.isTestRunning) {
         switchView('view-instructions');
     } else {
@@ -131,21 +119,21 @@ function checkTestStatus() {
     }
 }
 
-function checkResultVisibility() {
+async function checkResultVisibility() {
     if (document.getElementById('view-completed').style.display === 'block') {
-        const config = getConfig();
+        const config = await getConfig();
         const resultsView = document.getElementById('results-view');
         
         if (config.resultsVisible) {
             resultsView.style.display = 'block';
-            renderDetailedResults();
+            await renderDetailedResults();
         } else {
             resultsView.style.display = 'none';
         }
     }
 }
 
-function startExam() {
+async function startExam() {
     // Request full screen
     const docEl = document.documentElement;
     if (docEl.requestFullscreen) {
@@ -158,11 +146,11 @@ function startExam() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Setup state
-    questions = getQuestions();
+    questions = await getQuestions();
     
     // Shuffle questions logic could be added here
     
-    const config = getConfig();
+    const config = await getConfig();
     
     if (config.timerEnabled) {
         timeRemaining = questions.length * config.durationPerQuestion;
@@ -278,7 +266,7 @@ function terminateExam(reason) {
     }, 3000);
 }
 
-function submitExam(isAuto = false, terminatedReason = null) {
+async function submitExam(isAuto = false, terminatedReason = null) {
     isExamActive = false;
     clearInterval(timerInterval);
     
@@ -305,14 +293,14 @@ function submitExam(isAuto = false, terminatedReason = null) {
         date: new Date().toISOString()
     };
 
-    saveAttempt(attempt);
+    await saveAttempt(attempt);
 
     switchView('view-completed');
     checkResultVisibility(); // Check if admin already allowed it
 }
 
-function renderDetailedResults() {
-    const attempts = getAttempts();
+async function renderDetailedResults() {
+    const attempts = await getAttempts();
     const myLastAttempt = attempts.filter(a => a.studentId === currentStudentId).pop();
     
     if (!myLastAttempt) return;

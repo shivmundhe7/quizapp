@@ -29,14 +29,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Subsystem initialization wrapped for login flow
-    function initializeApp() {
-        refreshDashboard();
-        renderQuestionsCard();
-        renderStudentsCard();
-        loadSettings();
+    async function initializeApp() {
+        await refreshDashboard();
+        await renderQuestionsCard();
+        await renderStudentsCard();
+        await loadSettings();
 
         // Start/Stop Test Logic
-        const config = getConfig();
+        const config = await getConfig();
         updateUIWithTestStatus(config.isTestRunning);
 
         // Toggle Results Visibility setup
@@ -45,9 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btnResults.className = config.resultsVisible ? 'btn-danger' : 'btn-outline';
     }
 
-    // Auto-refresh when student completes
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'quizAttempts') {
+    // Auto-refresh when student completes via Firestore
+    db.collection("data").doc("attempts").onSnapshot((doc) => {
+        if (doc.exists) {
             if (sessionStorage.getItem('adminLoggedIn') === 'true') {
                 refreshDashboard();
             }
@@ -58,10 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-download-csv').addEventListener('click', downloadCSV);
 
     // Clear Logs
-    document.getElementById('btn-clear-attempts').addEventListener('click', () => {
+    document.getElementById('btn-clear-attempts').addEventListener('click', async () => {
         if(confirm("Are you sure you want to delete ALL student attempts? This cannot be undone.")) {
-            localStorage.setItem("quizAttempts", JSON.stringify([]));
-            refreshDashboard();
+            await db.collection("data").doc("attempts").set({ value: [] });
+            await refreshDashboard();
         }
     });
 
@@ -81,26 +81,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('btn-start-test').addEventListener('click', () => {
-        updateTestStatus(true);
+    document.getElementById('btn-start-test').addEventListener('click', async () => {
+        await updateTestStatus(true);
         updateUIWithTestStatus(true);
         alert('Test Started! Students can now submit their exams.');
     });
 
-    document.getElementById('btn-stop-test').addEventListener('click', () => {
-        updateTestStatus(false);
+    document.getElementById('btn-stop-test').addEventListener('click', async () => {
+        await updateTestStatus(false);
         updateUIWithTestStatus(false);
         alert('Test Stopped! Students can no longer start the exam.');
     });
 
     // Settings
-    document.getElementById('btn-save-settings').addEventListener('click', () => {
+    document.getElementById('btn-save-settings').addEventListener('click', async () => {
         const val = parseInt(document.getElementById('setting-timer-duration').value);
         if(val >= 5) {
-            const conf = getConfig();
+            const conf = await getConfig();
             conf.durationPerQuestion = val;
             conf.timerEnabled = document.getElementById('setting-timer-enabled').checked;
-            saveConfig(conf);
+            await saveConfig(conf);
             alert('Settings saved successfully!');
         } else {
             alert('Timer must be at least 5 seconds.');
@@ -109,10 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle Results Visibility
     const btnResults = document.getElementById('btn-toggle-results');
-    btnResults.addEventListener('click', () => {
-        const currentConf = getConfig();
+    btnResults.addEventListener('click', async () => {
+        const currentConf = await getConfig();
         const newState = !currentConf.resultsVisible;
-        toggleResultVisibility(newState);
+        await toggleResultVisibility(newState);
         
         btnResults.textContent = newState ? 'Disable Results for Students' : 'Enable Results for Students';
         btnResults.className = newState ? 'btn-danger' : 'btn-outline';
@@ -120,8 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function downloadCSV() {
-    const attempts = getAttempts();
+async function downloadCSV() {
+    const attempts = await getAttempts();
     if(attempts.length === 0) {
         alert("No results to download.");
         return;
@@ -167,8 +167,8 @@ function updateUIWithTestStatus(isRunning) {
     }
 }
 
-function refreshDashboard() {
-    const attempts = getAttempts();
+async function refreshDashboard() {
+    const attempts = await getAttempts();
     const tbody = document.getElementById('attempts-tbody');
     tbody.innerHTML = '';
 
@@ -206,22 +206,22 @@ function refreshDashboard() {
     });
 
     document.querySelectorAll('.btn-del-attempt').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             // Find closet button in case they clicked inner text
             const targetBtn = e.target.closest('button');
             if(confirm('Delete this specific attempt log permanently?')) {
                 const targetDate = targetBtn.dataset.date;
-                let atts = getAttempts().filter(a => a.date !== targetDate);
-                localStorage.setItem("quizAttempts", JSON.stringify(atts));
-                refreshDashboard();
+                let atts = (await getAttempts()).filter(a => a.date !== targetDate);
+                await db.collection("data").doc("attempts").set({ value: atts });
+                await refreshDashboard();
             }
         });
     });
 }
 
 // Question Management logic
-function renderQuestionsCard() {
-    const questions = getQuestions();
+async function renderQuestionsCard() {
+    const questions = await getQuestions();
     const list = document.getElementById('questions-list');
     list.innerHTML = '';
 
@@ -245,12 +245,12 @@ function renderQuestionsCard() {
 
     // Bind Edit/Delete
     document.querySelectorAll('.btn-del-q').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             const id = parseInt(e.target.dataset.id);
             if(confirm('Are you sure you want to delete this question?')) {
-                const qs = getQuestions().filter(q => q.id !== id);
-                saveQuestions(qs);
-                renderQuestionsCard();
+                const qs = (await getQuestions()).filter(q => q.id !== id);
+                await saveQuestions(qs);
+                await renderQuestionsCard();
             }
         });
     });
@@ -264,8 +264,8 @@ function renderQuestionsCard() {
 }
 
 // Student Management logic
-function renderStudentsCard() {
-    const students = getStudents();
+async function renderStudentsCard() {
+    const students = await getStudents();
     const tbody = document.getElementById('students-tbody');
     tbody.innerHTML = '';
 
@@ -276,67 +276,48 @@ function renderStudentsCard() {
 
     students.forEach((s) => {
         const row = document.createElement('tr');
-        
-        const boundStatus = s.boundDeviceId ? 
-            '<span class="badge badge-active">Yes (Locked)</span>' : 
-            '<span class="badge badge-stopped">No</span>';
 
         row.innerHTML = `
             <td><strong>${s.name}</strong></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.id}</code></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.password}</code></td>
-            <td>${boundStatus}</td>
             <td>
-                <button class="btn-outline btn-clear-device" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;" ${!s.boundDeviceId ? 'disabled' : ''}>Clear Device</button>
-                <button class="btn-danger btn-del-student" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem; margin-left:5px;">Delete</button>
+                <button class="btn-danger btn-del-student" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;">Delete</button>
             </td>
         `;
         tbody.appendChild(row);
     });
 
-    document.querySelectorAll('.btn-clear-device').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if(confirm('Clear device binding? The student will be able to log in from a new device. Previous device will be blocked.')) {
-                const sId = e.target.dataset.id;
-                const studList = getStudents();
-                const student = studList.find(st => st.id === sId);
-                if(student) {
-                    student.boundDeviceId = null;
-                    saveStudents(studList);
-                    renderStudentsCard();
-                }
-            }
-        });
-    });
+
 
     document.querySelectorAll('.btn-del-student').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             if(confirm('Delete student account permanently?')) {
                 const sId = e.target.dataset.id;
-                const studList = getStudents().filter(st => st.id !== sId);
-                saveStudents(studList);
-                renderStudentsCard();
+                const studList = (await getStudents()).filter(st => st.id !== sId);
+                await saveStudents(studList);
+                await renderStudentsCard();
             }
         });
     });
 }
 
-document.getElementById('btn-add-student').addEventListener('click', () => {
+document.getElementById('btn-add-student').addEventListener('click', async () => {
     const nameInput = document.getElementById('new-student-name');
+    const pwdInput = document.getElementById('new-student-password');
     const name = nameInput.value.trim();
-    if(!name) {
-        alert("Enter a student name.");
+    const pwd = pwdInput ? pwdInput.value.trim() : '';
+
+    if(!name || !pwd) {
+        alert("Enter a student name and password.");
         return;
     }
 
-    const students = getStudents();
+    const students = await getStudents();
     
     // Generate an ID like STD-1001
     const nextNum = 1001 + students.length;
     let sId = 'STD-' + nextNum;
-    
-    // Generate a random 6 char alphanumeric password
-    const pwd = Math.random().toString(36).substr(2, 6).toUpperCase();
 
     students.push({
         id: sId,
@@ -345,13 +326,14 @@ document.getElementById('btn-add-student').addEventListener('click', () => {
         boundDeviceId: null
     });
 
-    saveStudents(students);
+    await saveStudents(students);
     nameInput.value = '';
-    renderStudentsCard();
+    if (pwdInput) pwdInput.value = '';
+    await renderStudentsCard();
 });
 
-function loadSettings() {
-    const config = getConfig();
+async function loadSettings() {
+    const config = await getConfig();
     document.getElementById('setting-timer-duration').value = config.durationPerQuestion;
     document.getElementById('setting-timer-enabled').checked = config.timerEnabled;
 }
@@ -366,8 +348,8 @@ document.getElementById('btn-modal-cancel').addEventListener('click', () => {
     modal.style.display = 'none';
 });
 
-document.getElementById('btn-modal-save').addEventListener('click', () => {
-    const qs = getQuestions();
+document.getElementById('btn-modal-save').addEventListener('click', async () => {
+    const qs = await getQuestions();
     const idField = document.getElementById('modal-q-id').value;
     const isNew = idField === '';
     
@@ -404,16 +386,16 @@ document.getElementById('btn-modal-save').addEventListener('click', () => {
         if(idx >= 0) qs[idx] = newQ;
     }
 
-    saveQuestions(qs);
-    renderQuestionsCard();
+    await saveQuestions(qs);
+    await renderQuestionsCard();
     modal.style.display = 'none';
 });
 
-function openQuestionModal(id) {
+async function openQuestionModal(id) {
     modal.style.display = 'flex';
     
     if (id) {
-        const q = getQuestions().find(q => q.id === id);
+        const q = (await getQuestions()).find(q => q.id === id);
         document.getElementById('modal-q-id').value = q.id;
         document.getElementById('modal-q-text').value = q.question;
         q.options.forEach((opt, idx) => {

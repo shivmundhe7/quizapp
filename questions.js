@@ -115,114 +115,121 @@ const rawStudentData = `1	25401	AADAGALE AKSHADA HARISH	Not marked	Present Absen
 56	25456	YADAV PRADNYAN CHANDRASHEKHAR	Not marked	Present Absent Clear
 57	25457	ZANJE SHREYAS MALILI	Not marked	Present Absent Clear`;
 
-// Initialize LocalStorage if empty
-function initializeLocalData() {
-    if (!localStorage.getItem("quizQuestions")) {
-        localStorage.setItem("quizQuestions", JSON.stringify(defaultQuestions));
-    }
-    if (!localStorage.getItem("quizConfig")) {
-        localStorage.setItem("quizConfig", JSON.stringify({
-            timerEnabled: true,
-            durationPerQuestion: 15, // seconds
-            isTestRunning: false,
-            resultsVisible: false
-        }));
-    }
-    if (!localStorage.getItem("quizAttempts")) {
-        localStorage.setItem("quizAttempts", JSON.stringify([]));
-    }
-    if (!localStorage.getItem("quizStudents")) {
-        localStorage.setItem("quizStudents", JSON.stringify([]));
-    }
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAMT-dY6H88yoDCutfoxCBSq-RvgoZKeN8",
+    authDomain: "presenty-app.firebaseapp.com",
+    projectId: "presenty-app",
+    storageBucket: "presenty-app.firebasestorage.app",
+    messagingSenderId: "781939436929",
+    appId: "1:781939436929:web:bb9b1fe0f42aab3eef8c80",
+    measurementId: "G-D4C233F25E"
+};
 
-    // Auto-import provided student list on first load
-    if (!localStorage.getItem("quizStudentsSeededV1")) {
-        let students = JSON.parse(localStorage.getItem("quizStudents")) || [];
-        const lines = rawStudentData.trim().split('\n');
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
 
-        lines.forEach(line => {
-            if (!line.trim()) return;
-            const match = line.match(/^\d+\s+(\d+)\s+(.*?)\s+Not marked/);
-            if (match) {
-                const sId = match[1];
-                const sName = match[2].trim();
-                const pwd = Math.random().toString(36).substr(2, 6).toUpperCase();
+// Initialize Database if empty
+async function initializeDatabase() {
+    try {
+        const initRef = db.collection("system").doc("initialization");
+        const doc = await initRef.get();
+        if (!doc.exists) {
+            console.log("Database initialized for the first time...");
+            await db.collection("data").doc("questions").set({ value: defaultQuestions });
+            await db.collection("data").doc("config").set({
+                value: {
+                    timerEnabled: true,
+                    durationPerQuestion: 15,
+                    isTestRunning: false,
+                    resultsVisible: false
+                }
+            });
+            await db.collection("data").doc("attempts").set({ value: [] });
 
-                // Only push if not already exists
-                if (!students.find(s => s.id === sId)) {
+            let students = [];
+            const lines = rawStudentData.trim().split('\n');
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const match = line.match(/^\d+\s+(\d+)\s+(.*?)\s+Not marked/);
+                if (match) {
                     students.push({
-                        id: sId,
-                        name: sName,
-                        password: pwd,
+                        id: match[1],
+                        name: match[2].trim(),
+                        password: "123456",
                         boundDeviceId: null
                     });
                 }
-            }
-        });
-        localStorage.setItem("quizStudents", JSON.stringify(students));
-        localStorage.setItem("quizStudentsSeededV1", "true");
+            });
+            await db.collection("data").doc("students").set({ value: students });
+            
+            await initRef.set({ initialized: true });
+            console.log("Database initialized successfully.");
+        }
+    } catch (e) {
+        console.error("Error initializing database: ", e);
     }
 }
 
 // Helpers
-function getQuestions() {
-    return JSON.parse(localStorage.getItem("quizQuestions")) || [];
+async function getQuestions() {
+    const doc = await db.collection("data").doc("questions").get();
+    return doc.exists ? doc.data().value : [];
 }
 
-function saveQuestions(questions) {
-    localStorage.setItem("quizQuestions", JSON.stringify(questions));
+async function saveQuestions(questions) {
+    await db.collection("data").doc("questions").set({ value: questions });
 }
 
-function getConfig() {
-    return JSON.parse(localStorage.getItem("quizConfig"));
+async function getConfig() {
+    const doc = await db.collection("data").doc("config").get();
+    return doc.exists ? doc.data().value : {
+        timerEnabled: true,
+        durationPerQuestion: 15,
+        isTestRunning: false,
+        resultsVisible: false
+    };
 }
 
-function saveConfig(config) {
-    localStorage.setItem("quizConfig", JSON.stringify(config));
+async function saveConfig(config) {
+    await db.collection("data").doc("config").set({ value: config });
 }
 
-function getAttempts() {
-    return JSON.parse(localStorage.getItem("quizAttempts")) || [];
+async function getAttempts() {
+    const doc = await db.collection("data").doc("attempts").get();
+    return doc.exists ? doc.data().value : [];
 }
 
-function saveAttempt(attempt) {
-    const attempts = getAttempts();
+async function saveAttempt(attempt) {
+    const attempts = await getAttempts();
     attempts.push(attempt);
-    localStorage.setItem("quizAttempts", JSON.stringify(attempts));
+    await db.collection("data").doc("attempts").set({ value: attempts });
 }
 
-function updateTestStatus(isRunning) {
-    const config = getConfig();
+async function updateTestStatus(isRunning) {
+    const config = await getConfig();
     config.isTestRunning = isRunning;
-    saveConfig(config);
-
-    // Broadcast change to other tabs if necessary
-    localStorage.setItem("testStatusTrigger", Date.now());
+    await saveConfig(config);
 }
 
-function toggleResultVisibility(isVisible) {
-    const config = getConfig();
+async function toggleResultVisibility(isVisible) {
+    const config = await getConfig();
     config.resultsVisible = isVisible;
-    saveConfig(config);
+    await saveConfig(config);
 }
 
-function getStudents() {
-    return JSON.parse(localStorage.getItem("quizStudents")) || [];
+async function getStudents() {
+    const doc = await db.collection("data").doc("students").get();
+    return doc.exists ? doc.data().value : [];
 }
 
-function saveStudents(students) {
-    localStorage.setItem("quizStudents", JSON.stringify(students));
-    localStorage.setItem("testStatusTrigger", Date.now()); // Trigger updates implicitly
+async function saveStudents(students) {
+    await db.collection("data").doc("students").set({ value: students });
 }
 
-function getDeviceId() {
-    let id = localStorage.getItem("quizDeviceId");
-    if (!id) {
-        id = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-        localStorage.setItem("quizDeviceId", id);
-    }
-    return id;
-}
 
 // Auto-init on script load
-initializeLocalData();
+initializeDatabase();

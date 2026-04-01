@@ -93,20 +93,20 @@
                 <div class="flex-between">
                     <h2>Manage Students</h2>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="new-student-name" placeholder="Enter student name..." style="width:200px; margin:0;" />
-                        <button id="btn-add-student" class="btn-primary">Add & Generate ID</button>
+                        <input type="text" id="new-student-name" placeholder="Enter student name..." autocomplete="off" style="width:200px; margin:0;" />
+                        <input type="text" id="new-student-password" placeholder="Enter password..." autocomplete="new-password" style="width:150px; margin:0;" />
+                        <button id="btn-add-student" class="btn-primary">Add Student</button>
                     </div>
                 </div>
                 
                 <div class="card" style="margin-top: 2rem;">
-                    <p style="color:var(--text-muted); margin-bottom:1rem;">Students must use these generated credentials to log in. Their account binds permanently to the first device they use.</p>
+                    <p style="color:var(--text-muted); margin-bottom:1rem;">Students must use these generated credentials to log in.</p>
                     <table id="students-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Student ID</th>
                                 <th>Password</th>
-                                <th>Device Bound?</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -169,7 +169,11 @@
     </div>
     </div> <!-- End Admin App -->
 
-    <script src="questions.js"></script>
-    <script src="admin.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script src="questions.js?v=2"></script>
+    <script src="admin.js?v=2"></script>
 </body>
 </html>
