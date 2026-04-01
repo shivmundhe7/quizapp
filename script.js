@@ -49,8 +49,10 @@ function initNavigation() {
         }
 
         let students = [];
+        let attempts = [];
         try {
             students = await getStudents();
+            attempts = await getAttempts();
         } catch (e) {
             console.error("Firebase error details:", e);
             errorMsg.textContent = 'Network or database error. Please check your connection and try again.';
@@ -62,9 +64,15 @@ function initNavigation() {
             String(s.id).trim().toUpperCase() === String(sId).trim().toUpperCase() && 
             String(s.password).trim() === String(sPass).trim()
         );
-
         if (!student) {
             errorMsg.textContent = 'Invalid Student ID or Password.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        const hasAttempted = attempts.some(a => a.studentId === student.id);
+        if (hasAttempted) {
+            errorMsg.textContent = 'You have already attempted this exam. You cannot take it again.';
             errorMsg.style.display = 'block';
             return;
         }
