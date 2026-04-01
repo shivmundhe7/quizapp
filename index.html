@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Portal - Quiz System</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <!-- Security Warning Overlay -->
     <div id="warning-overlay">
         <h1 style="font-size: 3rem;">⚠️ WARNING!</h1>
-        <p style="font-size: 1.5rem; max-width: 600px;">Tab switching, minimizing, or exiting full screen is strictly prohibited during the exam.</p>
-        <p style="margin-top:2rem; font-size:1.2rem;">Your test will be automatically submitted if you violate these rules.</p>
+        <p style="font-size: 1.5rem; max-width: 600px;">Tab switching, minimizing, or exiting full screen is strictly
+            prohibited during the exam.</p>
+        <p style="margin-top:2rem; font-size:1.2rem;">Your test will be automatically submitted if you violate these
+            rules.</p>
     </div>
 
     <header class="admin-header flex-between" id="student-header">
@@ -26,24 +30,29 @@
     <main class="container">
 
         <!-- Initial Entry Screen -->
-        <section id="view-entry" class="glass-panel animate-fade-in" style="max-width: 500px; margin: 2rem auto; text-align:center;">
+        <section id="view-entry" class="glass-panel animate-fade-in"
+            style="max-width: 500px; margin: 2rem auto; text-align:center;">
             <h2>Student Login</h2>
             <p style="color:var(--text-muted); margin-bottom: 2rem;">Enter your credentials to access the exam.</p>
-            <input type="text" id="student-id" placeholder="Student ID (e.g. STD-1001)" autocapitalize="characters" style="margin-bottom: 1rem;">
+            <input type="text" id="student-id" placeholder="Student ID (e.g. STD-1001)" autocapitalize="characters"
+                style="margin-bottom: 1rem;">
             <input type="password" id="student-pass" placeholder="Password" style="margin-bottom: 1.5rem;">
             <button id="btn-enter" class="btn-primary btn-block">Login to Exam</button>
             <p id="login-error-msg" style="color:var(--danger); margin-top:1rem; display:none;"></p>
         </section>
 
         <!-- Waiting Screen (If test is not started by Admin) -->
-        <section id="view-waiting" class="glass-panel animate-fade-in" style="max-width: 600px; margin: 2rem auto; text-align:center; display:none;">
+        <section id="view-waiting" class="glass-panel animate-fade-in"
+            style="max-width: 600px; margin: 2rem auto; text-align:center; display:none;">
             <h2>Status: <span style="color:var(--warning)">Waiting for Admin</span></h2>
-            <p style="color:var(--text-muted); margin: 2rem 0;">The test has not been started yet. This page will automatically update once the Admin starts the test.</p>
+            <p style="color:var(--text-muted); margin: 2rem 0;">The test has not been started yet. This page will
+                automatically update once the Admin starts the test.</p>
             <div class="loader" style="margin: 0 auto;"></div>
         </section>
 
         <!-- Instructions Screen -->
-        <section id="view-instructions" class="glass-panel animate-fade-in" style="max-width: 700px; margin: 2rem auto; display:none;">
+        <section id="view-instructions" class="glass-panel animate-fade-in"
+            style="max-width: 700px; margin: 2rem auto; display:none;">
             <h2>Exam Instructions</h2>
             <ul style="color:var(--text-muted); margin: 1.5rem 0 1.5rem 1.5rem; line-height:1.8;">
                 <li>The test contains multiple choice questions.</li>
@@ -53,14 +62,16 @@
                 <li>Violation of rules will result in auto-submission and termination.</li>
             </ul>
             <div style="text-align:center; margin-top:2rem;">
-                <button id="btn-start" class="btn-success btn-block" style="font-size:1.2rem; padding:1rem;">I understand, Start Exam</button>
+                <button id="btn-start" class="btn-success btn-block" style="font-size:1.2rem; padding:1rem;">I
+                    understand, Start Exam</button>
             </div>
         </section>
 
         <!-- Quiz Screen -->
         <section id="view-quiz" class="animate-fade-in" style="max-width: 800px; margin: 0 auto; display:none;">
             <div class="card" style="margin-bottom: 1rem;">
-                <div class="flex-between" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom:1rem;">
+                <div class="flex-between"
+                    style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom:1rem;">
                     <h3 id="question-counter" style="color:var(--text-muted); margin:0;">Question 1 of 10</h3>
                     <div id="student-name-display" style="font-weight:bold; color:var(--accent);"></div>
                 </div>
@@ -80,16 +91,18 @@
         </section>
 
         <!-- Completed Screen -->
-        <section id="view-completed" class="glass-panel animate-fade-in" style="max-width: 600px; margin: 2rem auto; text-align:center; display:none;">
+        <section id="view-completed" class="glass-panel animate-fade-in"
+            style="max-width: 600px; margin: 2rem auto; text-align:center; display:none;">
             <h2>Exam Submitted Successfully</h2>
             <p style="color:var(--text-muted); margin: 2rem 0; font-size: 1.2rem;">
                 Your responses have been recorded. <br><br>
                 <strong style="color: #fff;">Results will be घोषित (declared) by the Admin.</strong> <br>
                 Check back later.
             </p>
-            
-            <div id="results-view" style="display: none; text-align:left; margin-top:2rem; border-top:1px solid var(--border); padding-top:2rem;">
-                
+
+            <div id="results-view"
+                style="display: none; text-align:left; margin-top:2rem; border-top:1px solid var(--border); padding-top:2rem;">
+
 
                 <div id="detailed-results">
                     <!-- Detailed result populated via JS -->
@@ -103,7 +116,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <script src="questions.js?v=3"></script>
-    <script src="script.js?v=3"></script>
+    <script src="questions.js?v=4"></script>
+    <script src="script.js?v=4"></script>
 </body>
+
 </html>

@@ -69,6 +69,12 @@ function initNavigation() {
             return;
         }
 
+        if (student.isAbsent) {
+            errorMsg.textContent = 'You have been marked absent. You cannot attempt this test.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
         // Login Success
         currentStudentId = student.id;
         currentStudentName = student.name;

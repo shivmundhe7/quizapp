@@ -122,7 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function downloadCSV() {
     const attempts = await getAttempts();
-    if(attempts.length === 0) {
+    const students = await getStudents();
+    const absentStudents = students.filter(s => s.isAbsent);
+    
+    if(attempts.length === 0 && absentStudents.length === 0) {
         alert("No results to download.");
         return;
     }
@@ -137,6 +140,11 @@ async function downloadCSV() {
         const reason = a.terminatedReason ? a.terminatedReason : "None";
         const sId = a.studentId || 'N/A';
         const row = `${sId},${a.studentName},${a.score},${a.totalQuestions},${date},${status},"${reason}"`;
+        csvContent += row + "\n";
+    });
+
+    absentStudents.forEach(s => {
+        const row = `${s.id},${s.name},0,0,N/A,Absent,"Marked Absent"`;
         csvContent += row + "\n";
     });
 
@@ -169,11 +177,14 @@ function updateUIWithTestStatus(isRunning) {
 
 async function refreshDashboard() {
     const attempts = await getAttempts();
+    const students = await getStudents();
     const tbody = document.getElementById('attempts-tbody');
     tbody.innerHTML = '';
 
-    if (attempts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted)">No attempts yet.</td></tr>';
+    const absentStudents = students.filter(s => s.isAbsent);
+
+    if (attempts.length === 0 && absentStudents.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted)">No attempts or absent students yet.</td></tr>';
         return;
     }
 
@@ -200,6 +211,22 @@ async function refreshDashboard() {
             <td style="color:var(--text-muted); font-size: 0.9em; display:flex; justify-content:space-between; align-items:center; border-bottom:none;">
                 <span>${dateStr}</span>
                 <button class="btn-del-attempt" data-date="${attempt.date}" style="background:transparent; border:none; font-size:1.2rem; margin-left:10px; cursor:pointer;" title="Delete this log">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Display absent students
+    absentStudents.forEach(s => {
+        const row = document.createElement('tr');
+        row.style.opacity = '0.7';
+
+        row.innerHTML = `
+            <td><strong>${s.name}</strong></td>
+            <td>N/A</td>
+            <td><span class="badge badge-stopped" style="background:var(--danger);">Absent</span></td>
+            <td style="color:var(--text-muted); font-size: 0.9em; text-align:center;">
+                <span>Marked Absent</span>
             </td>
         `;
         tbody.appendChild(row);
@@ -277,11 +304,17 @@ async function renderStudentsCard() {
     students.forEach((s) => {
         const row = document.createElement('tr');
 
+        const statusText = s.isAbsent ? '<span style="color:var(--danger);font-weight:bold;">Absent</span>' : '<span style="color:var(--success);font-weight:bold;">Present</span>';
+        const toggleBtnClass = s.isAbsent ? 'btn-success' : 'btn-outline';
+        const toggleBtnText = s.isAbsent ? 'Mark Present' : 'Mark Absent';
+
         row.innerHTML = `
             <td><strong>${s.name}</strong></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.id}</code></td>
             <td><code style="background:var(--bg-color); padding:4px 8px; border-radius:4px;">${s.password}</code></td>
-            <td>
+            <td>${statusText}</td>
+            <td style="display:flex; gap:5px;">
+                <button class="${toggleBtnClass} btn-toggle-absent" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;">${toggleBtnText}</button>
                 <button class="btn-danger btn-del-student" data-id="${s.id}" style="padding: 0.4rem 0.8rem; font-size:0.8rem;">Delete</button>
             </td>
         `;
@@ -289,6 +322,19 @@ async function renderStudentsCard() {
     });
 
 
+
+    document.querySelectorAll('.btn-toggle-absent').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const sId = e.target.dataset.id;
+            const studList = await getStudents();
+            const student = studList.find(st => st.id === sId);
+            if (student) {
+                student.isAbsent = !student.isAbsent;
+                await saveStudents(studList);
+                await renderStudentsCard();
+            }
+        });
+    });
 
     document.querySelectorAll('.btn-del-student').forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -328,7 +374,8 @@ document.getElementById('btn-add-student').addEventListener('click', async () =>
         id: sId,
         name: name,
         password: pwd,
-        boundDeviceId: null
+        boundDeviceId: null,
+        isAbsent: false
     });
 
     await saveStudents(students);

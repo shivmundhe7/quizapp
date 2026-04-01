@@ -160,7 +160,8 @@ async function initializeDatabase() {
                         id: match[1],
                         name: match[2].trim(),
                         password: Math.floor(100000 + Math.random() * 900000).toString(),
-                        boundDeviceId: null
+                        boundDeviceId: null,
+                        isAbsent: false
                     });
                 }
             });
