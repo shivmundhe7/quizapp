@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Admin Login Logic
-    const btnLogin = document.getElementById('btn-login');
+    const btnLogin = document.getElementById('btn-login') ;
     const viewLogin = document.getElementById('view-login');
     const adminApp = document.getElementById('admin-app');
     const errorMsg = document.getElementById('login-error');
